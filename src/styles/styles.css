@@ -1,0 +1,58 @@
+body {
+  background-color: #fcedd8;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#game-container {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  background-color: #fff; 
+  border: 2px solid #000;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  overflow: hidden; 
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10%;
+}
+
+button.spin-button {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 5px #666;
+  z-index: 2; 
+}
+
+button.spin-button:hover {
+  background-color: #45a049;
+}
+
+button.spin-button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 3px #666;
+  transform: translateY(2px);
+}
