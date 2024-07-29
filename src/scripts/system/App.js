@@ -1,45 +1,54 @@
 import { gsap } from "gsap";
-import * as PIXI from "pixi.js";
 import { PixiPlugin } from "gsap/PixiPlugin";
+import { CSSPlugin } from "gsap/CSSPlugin";
+import * as PIXI from "pixi.js";
+import { Config } from "../game/Config";
 import { Loader } from "./Loader";
 import "../../styles/styles.css";
 
-gsap.registerPlugin(PixiPlugin);
+gsap.registerPlugin(PixiPlugin, CSSPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
-const app = new PIXI.Application({ resizeTo: window });
-document.getElementById("game-container").appendChild(app.view);
+export class App {
+  constructor() {
+    this.config = Config;
+    this.app = new PIXI.Application({
+      width: 800,
+      height: 600,
+      backgroundColor: 0xece4e4,
+    });
 
-import("../game/Config").then(({ Config }) => {
+    document.body.appendChild(this.app.view);
+  }
+}
+
+const appInstance = new App();
+const app = appInstance.app;
+app.config = appInstance.config;
+
+document.addEventListener("DOMContentLoaded", () => {
   const loader = new Loader(Config);
   loader
     .preload()
     .then(() => {
       console.log("Resources ==>", loader.resources);
 
-      import("../game/Config")
-        .then(({ Config }) => {
-          console.log("Config ==>", Config);
+      if (!loader.resources) {
+        throw new Error("Loader resources are not available");
+      }
 
-          import("../game/Game")
-            .then(({ Game }) => {
-              const scene = new Game(loader);
-              app.stage.addChild(scene.container);
-            })
-            .catch((error) => {
-              console.error("Error loading Game:", error);
-            });
+      import("../game/Game")
+        .then(({ Game }) => {
+          const scene = new Game(loader, app);
+          app.stage.addChild(scene.container);
         })
         .catch((error) => {
-          console.error("Error loading Config:", error);
+          console.error("Error loading Game:", error);
         });
     })
     .catch((error) => {
-      console.error("error loading assets ==>", error);
+      console.error("Error loading Config:", error);
     });
-
-  function run(config) {
-    console.log("Running with config", config);
-  }
 });
-export { app };
+
+export { appInstance as app };

@@ -5,32 +5,32 @@ export const Config = {
   tilesColors: ["blue", "green", "orange", "pink", "red", "yellow"],
   board: {
     rows: 3,
-    cols: 3,
+    cols: 6,
   },
   loader: [
     {
-      key: "../../assets/blue.png",
-      data: require("../../assets/blue.png"),
+      key: "blue",
+      data: require("../../assets/blue.png").default,
     },
     {
-      key: "../../assets/green.png",
-      data: require("../../assets/green.png"),
+      key: "green",
+      data: require("../../assets/green.png").default,
     },
     {
-      key: "../../assets/orange.png",
-      data: require("../../assets/orange.png"),
+      key: "orange",
+      data: require("../../assets/orange.png").default,
     },
     {
-      key: "../../assets/pink.png",
-      data: require("../../assets/pink.png"),
+      key: "pink",
+      data: require("../../assets/pink.png").default,
     },
     {
-      key: "../../assets/red.png",
-      data: require("../../assets/red.png"),
+      key: "red",
+      data: require("../../assets/red.png").default,
     },
     {
-      key: "../../assets/yellow.png",
-      data: require("../../assets/yellow.png"),
+      key: "yellow",
+      data: require("../../assets/yellow.png").default,
     },
   ],
 };
