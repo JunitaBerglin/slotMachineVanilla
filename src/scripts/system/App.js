@@ -31,8 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loader
     .preload()
     .then(() => {
-      console.log("Resources ==>", loader.resources);
-
       if (!loader.resources) {
         throw new Error("Loader resources are not available");
       }

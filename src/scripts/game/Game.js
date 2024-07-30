@@ -26,16 +26,18 @@ export class Game {
     this.container.x = (app.screen.width - this.container.width) / 4;
     this.container.y =
       (app.screen.height - this.container.height) / 2;
+
+    this.isSpinning = false;
   }
 
   createHighlightBox() {
     const graphics = new PIXI.Graphics();
-    graphics.lineStyle(1, 0xff0000, 1);
+    graphics.lineStyle(1, 0xffffff, 1);
     graphics.drawRect(
       this.app.screen.width / 3 - 100,
-      this.app.screen.height / 2 - 70,
-      500,
-      120
+      this.app.screen.height / 2 - 90,
+      600,
+      110
     );
     this.app.stage.addChild(graphics);
   }
@@ -51,6 +53,8 @@ export class Game {
       this.wheels.push(wheel);
       this.container.addChild(wheel);
     }
+
+    this.logAllTileTextures();
   }
 
   createWheel(x) {
@@ -59,12 +63,17 @@ export class Game {
     wheel.y = 100;
     wheel.tiles = [];
 
-    const totalTiles = 100;
+    const colors = Config.tilesColors;
+    const totalTiles = colors.length * 3;
+
     for (let i = 0; i < totalTiles; i++) {
-      const tile = this.createTile();
-      tile.y = i * 100;
-      wheel.addChild(tile);
-      wheel.tiles.push(tile);
+      const color = colors[i % colors.length];
+      const tile = this.createTile(color);
+      if (tile) {
+        tile.y = i * 100;
+        wheel.addChild(tile);
+        wheel.tiles.push(tile);
+      }
     }
 
     wheel.loop = verticalLoop(wheel.children, {
@@ -82,20 +91,28 @@ export class Game {
 
     button.addEventListener("click", this.toggleSpin.bind(this));
 
-    document.getElementById("game-container").appendChild(button);
+    this.app.view.parentElement.appendChild(button);
   }
 
-  createTile() {
-    const colors = Config.tilesColors;
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const tile = new PIXI.Sprite(
-      this.loader.resources[color]?.texture
-    );
+  createTile(color) {
+    const resource = this.loader.resources[color];
+
+    if (!resource) {
+      return null;
+    }
+
+    const texture = resource.texture;
+    if (!texture) {
+      console.error(`Texture for color ${color} is null`);
+      return null;
+    }
+
+    const tile = new PIXI.Sprite(texture);
     tile.anchor.set(0.5);
-    tile.x = 0;
+    tile.x = 50;
     tile.width = 100;
     tile.height = 100;
-
+    tile.color = color;
     return tile;
   }
 
@@ -132,7 +149,7 @@ export class Game {
     let completedAnimations = 0;
     const totalWheels = this.wheels.length;
 
-    this.wheels.forEach((wheel) => {
+    this.wheels.forEach((wheel, index) => {
       gsap.killTweensOf(wheel.children);
 
       let randomIndex = gsap.utils.random(
@@ -162,28 +179,72 @@ export class Game {
   }
 
   checkWin() {
-    const middleTiles = this.wheels.map(
-      (wheel) =>
-        wheel.children[Math.floor(wheel.children.length / 2)].texture
-    );
-    if (
-      middleTiles[0] === middleTiles[1] &&
-      middleTiles[1] === middleTiles[2]
-    ) {
-      console.log("We have a winner!");
+    const frameY = this.app.screen.height / 2 - 70;
+    const frameHeight = 120;
+    const frameMiddleY = frameY + frameHeight / 2;
+
+    const middleTiles = [];
+
+    this.wheels.forEach((wheel, wheelIndex) => {
+      let closestTile = null;
+      let minDistance = Infinity;
+
+      wheel.tiles.forEach((tile, tileIndex) => {
+        const tileCenterY = tile.y + wheel.y + tile.height / 2;
+        const distance = Math.abs(tileCenterY - frameMiddleY);
+
+        if (distance < minDistance) {
+          closestTile = tile;
+          minDistance = distance;
+        }
+      });
+
+      if (closestTile) {
+        middleTiles.push(closestTile);
+      }
+    });
+
+    this.checkJackpot(middleTiles);
+  }
+
+  checkJackpot(tiles) {
+    const colors = tiles.map((tile) => tile.color);
+    const isJackpot = colors.every((color) => color === colors[0]);
+
+    if (isJackpot) {
       this.playWinAnimation();
+      console.log("Jackpot!");
     } else {
-      console.log("No win, try again.");
+      console.log("No jackpot");
     }
   }
 
-  playWinAnimation() {
-    const video = document.getElementById("win-video");
-    video.style.display = "block";
-    video.play();
+  logAllTileTextures() {
+    this.wheels.forEach((wheel, index) => {
+      wheel.tiles.forEach((tile, tileIndex) => {});
+    });
+  }
 
-    video.onended = () => {
-      video.style.display = "none";
-    };
+  playWinAnimation() {
+    const winElement = document.getElementById("container-win");
+    if (winElement) {
+      winElement.style.display = "block";
+      gsap.fromTo(
+        winElement,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration: 0.5,
+          repeat: 5,
+          yoyo: true,
+          onComplete: () => {
+            winElement.style.display = "none";
+          },
+        }
+      );
+      console.log("Win animation played");
+    } else {
+      console.error("Element with ID 'container-win' not found");
+    }
   }
 }
